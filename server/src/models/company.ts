@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 export interface CompanyDocument {
+    id: string;
     name: string;
     address: string;
     coordinates: string;
@@ -8,10 +9,11 @@ export interface CompanyDocument {
 }
 const companySchema = new Schema<CompanyDocument>(
     {
-        name: { type: "string", required: true },
+        id: { type: "string", required: true, unique: true },
+        name: { type: "string", required: true, unique: true },
         address: { type: "string", required: true },
         coordinates: { type: "string", required: true },
-        employees: { type: [Schema.Types.ObjectId], default: [] },
+        employees: { type: [Schema.Types.String], default: [] },
     },
     { timestamps: true }
 );

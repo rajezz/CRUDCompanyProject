@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = exports.getUser = exports.listUsers = void 0;
+exports.deactivateUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUser = exports.listUsers = void 0;
 /**
  * API Route: GET /api/users/list
  *
@@ -80,3 +80,17 @@ function deleteUser(req, res, next) {
     });
 }
 exports.deleteUser = deleteUser;
+/**
+ * API Route: DELETE /api/user/:id/deactivate
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @param {NextFunction} next
+ * @return {Promise<any>}
+ */
+function deactivateUser(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("API request: deactivateUser");
+    });
+}
+exports.deactivateUser = deactivateUser;
