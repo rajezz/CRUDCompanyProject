@@ -136,6 +136,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
                 message: error,
             });
         }
+
         if (Object.keys(result).length === 0) {
             return sendValidationErrorResponse({ res, message: "Empty request body." });
         }
