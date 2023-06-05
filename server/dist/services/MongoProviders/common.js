@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDocument = exports.createDoc = exports.updateOrUpsert = exports.findByQuery = exports.findById = void 0;
+exports.deleteDocument = exports.createDoc = exports.updateOrUpsert = exports.updateMany = exports.findByQuery = exports.findById = void 0;
 const util_1 = __importDefault(require("util"));
 const MongoError_1 = __importDefault(require("../../lib/MongoError"));
 const utils_1 = require("../../lib/utils");
@@ -45,7 +45,7 @@ function findByQuery(model, query, sort = undefined) {
             console.error(`Error: ${util_1.default.inspect(error, true, 3)}`);
             return [new MongoError_1.default(error)];
         }
-        if (response == null || (response === null || response === void 0 ? void 0 : response.length) === 0) {
+        if (response == null || (Object.keys(query).length > 0 && (response === null || response === void 0 ? void 0 : response.length) === 0)) {
             return [new MongoError_1.default(NotFoundError)];
         }
         console.info(`Response: ${util_1.default.inspect(response, true, 3)}`);
@@ -53,6 +53,19 @@ function findByQuery(model, query, sort = undefined) {
     });
 }
 exports.findByQuery = findByQuery;
+function updateMany(model, query, doc) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("[Inside updateMany]");
+        const [error, response] = yield (0, utils_1.asyncWrapper)(model.updateMany(query, doc, { returnDocument: "after" }));
+        error && console.error(`Error: ${util_1.default.inspect(error, true, 3)}`);
+        if (error || response == null) {
+            return [new MongoError_1.default(error)];
+        }
+        console.info("Updated One/More documents");
+        return [null, response];
+    });
+}
+exports.updateMany = updateMany;
 function updateOrUpsert(model, query, doc, upsert = true) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("[Inside updateOrUpsert]");

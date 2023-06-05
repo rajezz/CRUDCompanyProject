@@ -15,7 +15,7 @@ export async function createCompanyDoc(companyDoc: CompanyDocument) {
         return [
             {
                 status: HttpStatus.NOT_ACCEPTABLE_ERROR,
-                message: `Company already exists with the name - ${companyDoc.name}`,
+                message: `Company (${companyDoc.name}) already exists.`,
             },
         ];
     }
@@ -36,7 +36,7 @@ export async function createCompanyDoc(companyDoc: CompanyDocument) {
         return [
             {
                 status: HttpStatus.SERVER_ERROR,
-                message: error.message ?? "Couldn't add document in MongoDB",
+                message: error.message ?? "Couldn't add Company in MongoDB",
                 data: error,
             },
         ];
@@ -52,23 +52,16 @@ export async function getCompanies(id: string | null = null) {
     const [fetchError, fetchResponse] = await findByQuery<CompanyDocument>(Company, query);
 
     if (fetchError) {
-        if (fetchError.name === "NotFoundError") {
-            return [
-                {
-                    status: HttpStatus.NOT_FOUND_ERROR,
-                    message: fetchError.message,
-                    data: fetchError,
-                },
-            ];
-        } else {
-            return [
-                {
-                    status: HttpStatus.SERVER_ERROR,
-                    message: fetchError.message ?? "Couldn't access MongoDB",
-                    data: fetchError,
-                },
-            ];
-        }
+        return [
+            {
+                status:
+                    fetchError.name === "NotFoundError"
+                        ? HttpStatus.NOT_FOUND_ERROR
+                        : HttpStatus.SERVER_ERROR,
+                message: fetchError.message ?? "Couldn't access MongoDB",
+                data: fetchError,
+            },
+        ];
     }
     return [null, fetchResponse];
 }
@@ -89,4 +82,3 @@ export async function updateCompanyDoc(id: string, doc: any) {
     console.info(`Updated company doc: ${util.inspect(result, false, 2)}`);
     return [null, result];
 }
-

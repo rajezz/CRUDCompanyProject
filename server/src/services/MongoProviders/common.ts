@@ -35,10 +35,27 @@ export async function findByQuery<T>(
         console.error(`Error: ${util.inspect(error, true, 3)}`);
         return [new MongoError(error)];
     }
-    if (response == null || response?.length === 0) {
+    if (response == null || (Object.keys(query).length > 0 && response?.length === 0)) {
         return [new MongoError(NotFoundError)];
     }
     console.info(`Response: ${util.inspect(response, true, 3)}`);
+    return [null, response];
+}
+
+export async function updateMany<T>(
+    model: Model<T>,
+    query: FilterQuery<T>,
+    doc: UpdateQuery<T>
+) {
+    console.log("[Inside updateMany]");
+    const [error, response] = await asyncWrapper(
+        model.updateMany(query, doc, { returnDocument: "after" })
+    );
+    error && console.error(`Error: ${util.inspect(error, true, 3)}`);
+    if (error || response == null) {
+        return [new MongoError(error)];
+    }
+    console.info("Updated One/More documents");
     return [null, response];
 }
 
@@ -82,7 +99,7 @@ export async function deleteDocument<T>(model: Model<T>, id: string) {
         return new MongoError(error);
     }
     if (response?.deletedCount === 0) {
-      return new MongoError(NotFoundError);
+        return new MongoError(NotFoundError);
     }
     console.info(`Response: ${util.inspect(response, true, 3)}`);
     return null;

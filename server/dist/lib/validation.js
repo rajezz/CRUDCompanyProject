@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractBodyForUserUpdate = exports.processCompanyBody = exports.getValuesToBeUpdated = exports.validateBody = void 0;
+exports.extractBodyForUserUpdate = exports.processBody = exports.processCompanyBody = exports.getValuesToBeUpdated = exports.validateBody = void 0;
 const Joi_1 = __importDefault(require("Joi"));
 const utils_1 = require("./utils");
 const CompanyCreateSchema = Joi_1.default.object({
@@ -42,6 +42,18 @@ const SCHEMA_MAPPING = {
     USER_CREATE: UserCreateSchema,
     USER_UPDATE: UserUpdateSchema,
 };
+const PROPERTIES_MAPPING = {
+    COMPANY_UPDATE: ["name", "address", "coordinates"],
+    USER_UPDATE: [
+        "firstName",
+        "lastName",
+        "email",
+        "designation",
+        "dob",
+        "currentCompany",
+        "active",
+    ],
+};
 function validateBody(doc, action) {
     const result = SCHEMA_MAPPING[action].validate(doc);
     //console.log("validateBody result: ", util.inspect(result, true, 4));
@@ -67,6 +79,19 @@ function processCompanyBody(body) {
     return [null, formattedBody];
 }
 exports.processCompanyBody = processCompanyBody;
+function processBody(body, action) {
+    if (typeof body["id"] != "undefined") {
+        return ["Invalid body ['id' cannot be updated]"];
+    }
+    const formattedBody = (0, utils_1.trimObject)(body, PROPERTIES_MAPPING[action]);
+    const validationError = validateBody(formattedBody, action);
+    if (validationError) {
+        console.error(`Validation Error: ${validationError}`);
+        return [`Unsupported body content - [${validationError}]`];
+    }
+    return [null, formattedBody];
+}
+exports.processBody = processBody;
 function extractBodyForUserUpdate(obj) {
     return Object.keys(obj).map((key) => {
         if (key === "add") {

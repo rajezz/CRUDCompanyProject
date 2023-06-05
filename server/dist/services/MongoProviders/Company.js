@@ -28,7 +28,7 @@ function createCompanyDoc(companyDoc) {
             return [
                 {
                     status: HttpStatus_1.HttpStatus.NOT_ACCEPTABLE_ERROR,
-                    message: `Company already exists with the name - ${companyDoc.name}`,
+                    message: `Company (${companyDoc.name}) already exists.`,
                 },
             ];
         }
@@ -47,7 +47,7 @@ function createCompanyDoc(companyDoc) {
             return [
                 {
                     status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                    message: (_b = error.message) !== null && _b !== void 0 ? _b : "Couldn't add document in MongoDB",
+                    message: (_b = error.message) !== null && _b !== void 0 ? _b : "Couldn't add Company in MongoDB",
                     data: error,
                 },
             ];
@@ -64,24 +64,15 @@ function getCompanies(id = null) {
         const query = id ? { id } : {};
         const [fetchError, fetchResponse] = yield (0, common_1.findByQuery)(company_1.Company, query);
         if (fetchError) {
-            if (fetchError.name === "NotFoundError") {
-                return [
-                    {
-                        status: HttpStatus_1.HttpStatus.NOT_FOUND_ERROR,
-                        message: fetchError.message,
-                        data: fetchError,
-                    },
-                ];
-            }
-            else {
-                return [
-                    {
-                        status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                        message: (_a = fetchError.message) !== null && _a !== void 0 ? _a : "Couldn't access MongoDB",
-                        data: fetchError,
-                    },
-                ];
-            }
+            return [
+                {
+                    status: fetchError.name === "NotFoundError"
+                        ? HttpStatus_1.HttpStatus.NOT_FOUND_ERROR
+                        : HttpStatus_1.HttpStatus.SERVER_ERROR,
+                    message: (_a = fetchError.message) !== null && _a !== void 0 ? _a : "Couldn't access MongoDB",
+                    data: fetchError,
+                },
+            ];
         }
         return [null, fetchResponse];
     });

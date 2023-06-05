@@ -40,7 +40,22 @@ const SCHEMA_MAPPING = {
     USER_UPDATE: UserUpdateSchema,
 };
 
-export function validateBody(doc: any, action: keyof typeof SCHEMA_MAPPING) {
+const PROPERTIES_MAPPING = {
+    COMPANY_UPDATE: ["name", "address", "coordinates"],
+    USER_UPDATE: [
+        "firstName",
+        "lastName",
+        "email",
+        "designation",
+        "dob",
+        "currentCompany",
+        "active",
+    ],
+};
+
+type ValidationType = keyof typeof SCHEMA_MAPPING;
+
+export function validateBody(doc: any, action: ValidationType) {
     const result = SCHEMA_MAPPING[action].validate(doc);
     //console.log("validateBody result: ", util.inspect(result, true, 4));
     return result.error instanceof Joi.ValidationError ? result.error.stack : undefined;
@@ -59,6 +74,21 @@ export function processCompanyBody(body: any) {
 
     const formattedBody = trimObject(body, ["name", "address", "coordinates"]);
     const validationError = validateBody(formattedBody, "COMPANY_UPDATE");
+
+    if (validationError) {
+        console.error(`Validation Error: ${validationError}`);
+        return [`Unsupported body content - [${validationError}]`];
+    }
+
+    return [null, formattedBody];
+}
+export function processBody(body: any, action: ValidationType) {
+    if (typeof body["id"] != "undefined") {
+        return ["Invalid body ['id' cannot be updated]"];
+    }
+
+    const formattedBody = trimObject(body, PROPERTIES_MAPPING[action]);
+    const validationError = validateBody(formattedBody, action);
 
     if (validationError) {
         console.error(`Validation Error: ${validationError}`);

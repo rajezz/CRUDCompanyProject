@@ -10,7 +10,6 @@ apiRouter.get("/companies/list", company_1.listCompanies);
 apiRouter.get("/company/:id", company_1.getCompany);
 apiRouter.post("/company", company_1.createCompany);
 apiRouter.put("/company/:id", company_1.updateCompany);
-apiRouter.put("/company/adduser", company_1.addUserToCompany);
 apiRouter.delete("/company/:id", company_1.deleteCompany);
 apiRouter.get("/users/list", user_1.listUsers);
 apiRouter.get("/user/:id", user_1.getUser);

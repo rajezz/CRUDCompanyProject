@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCompany = exports.updateCompany = exports.addUserToCompany = exports.createCompany = exports.getCompany = exports.listCompanies = void 0;
+exports.deleteCompany = exports.updateCompany = exports.createCompany = exports.getCompany = exports.listCompanies = void 0;
 const HttpResponse_1 = require("../lib/HttpResponse");
 const HttpStatus_1 = require("../lib/HttpStatus");
 const company_1 = require("../models/company");
@@ -26,28 +26,9 @@ const common_1 = require("../services/MongoProviders/common");
  * @return {Promise<any>}
  */
 function listCompanies(req, res, next) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         console.log("API request: listCompanies");
-        try {
-            const [error, result] = yield (0, Company_1.getCompanies)();
-            if (error) {
-                return (0, HttpResponse_1.sendErrorResponse)(Object.assign({ res }, error));
-            }
-            return (0, HttpResponse_1.sendResponse)({
-                res,
-                status: HttpStatus_1.HttpStatus.OK,
-                message: "Successfully fetched companies.",
-                data: { companies: result },
-            });
-        }
-        catch (error) {
-            return (0, HttpResponse_1.sendErrorResponse)({
-                res,
-                status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : "Error creating company",
-            });
-        }
+        return yield fetchCompany(res);
     });
 }
 exports.listCompanies = listCompanies;
@@ -60,32 +41,45 @@ exports.listCompanies = listCompanies;
  * @return {Promise<any>}
  */
 function getCompany(req, res, next) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         console.log("API request: getCompany");
+        const { id } = req.params;
+        return yield fetchCompany(res, id);
+    });
+}
+exports.getCompany = getCompany;
+function fetchCompany(res, id) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { id } = req.params;
-            const [error, result] = yield (0, Company_1.getCompanies)(id);
+            const query = id ? { id } : {};
+            const [error, result] = yield (0, common_1.findByQuery)(company_1.Company, query);
             if (error) {
-                return (0, HttpResponse_1.sendErrorResponse)(Object.assign({ res }, error));
+                return (0, HttpResponse_1.sendErrorResponse)({
+                    res,
+                    status: error.name === "NotFoundError"
+                        ? HttpStatus_1.HttpStatus.NOT_FOUND_ERROR
+                        : HttpStatus_1.HttpStatus.SERVER_ERROR,
+                    message: (_a = error.message) !== null && _a !== void 0 ? _a : "Couldn't access MongoDB",
+                    data: error,
+                });
             }
             return (0, HttpResponse_1.sendResponse)({
                 res,
                 status: HttpStatus_1.HttpStatus.OK,
-                message: "Successfully fetched companies.",
-                data: { companies: result.shift() },
+                message: "Successfully fetched Companies.",
+                data: { companies: result },
             });
         }
         catch (error) {
             return (0, HttpResponse_1.sendErrorResponse)({
                 res,
                 status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : "Error creating company",
+                message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : "Error fetching Companies",
             });
         }
     });
 }
-exports.getCompany = getCompany;
 /**
  * API Route: POST /api/company
  *
@@ -130,20 +124,6 @@ function createCompany(req, res, next) {
 }
 exports.createCompany = createCompany;
 /**
- * API Route: PUT /api/company/adduser
- *
- * @param {Request} req
- * @param {Response} res
- * @param {NextFunction} next
- * @return {Promise<any>}
- */
-function addUserToCompany(req, res, next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log("API request: addUserToCompany");
-    });
-}
-exports.addUserToCompany = addUserToCompany;
-/**
  * API Route: PUT /api/company/:id
  *
  * @param {Request} req
@@ -158,14 +138,14 @@ function updateCompany(req, res, next) {
         try {
             const { id } = req.params;
             let error, result;
-            [error, result] = (0, validation_1.processCompanyBody)(req.body);
+            [error, result] = (0, validation_1.processBody)(req.body, "COMPANY_UPDATE");
             if (error) {
                 return (0, HttpResponse_1.sendValidationErrorResponse)({
                     res,
                     message: error,
                 });
             }
-            if (Object.keys(result).length === 0) {
+            if (Object.keys(req.body).length === 0) {
                 return (0, HttpResponse_1.sendValidationErrorResponse)({ res, message: "Empty request body." });
             }
             [error, result] = yield (0, Company_1.updateCompanyDoc)(id, result);
@@ -187,7 +167,7 @@ function updateCompany(req, res, next) {
             return (0, HttpResponse_1.sendErrorResponse)({
                 res,
                 status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : "Error creating company",
+                message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : "Error updating the Company",
             });
         }
     });
@@ -220,7 +200,7 @@ function deleteCompany(req, res, next) {
             return (0, HttpResponse_1.sendResponse)({
                 res,
                 status: HttpStatus_1.HttpStatus.OK,
-                message: `Successfully deleted Company - ${id}`,
+                message: `Successfully deleted the Company - ${id}`,
                 data: { deletedCompany: id },
             });
         }
@@ -228,7 +208,7 @@ function deleteCompany(req, res, next) {
             return (0, HttpResponse_1.sendErrorResponse)({
                 res,
                 status: HttpStatus_1.HttpStatus.SERVER_ERROR,
-                message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : "Error deleting company",
+                message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : "Error deleting the Company",
             });
         }
     });
@@ -239,11 +219,21 @@ function addRemoveUserFromCompany(id, employees) {
         const updateContents = (0, validation_1.extractBodyForUserUpdate)(employees);
         let finalResult;
         for (let i = 0; i < updateContents.length; i++) {
-            const [updateError, updateResult] = yield (0, Company_1.updateCompanyDoc)(id, updateContents[i]);
-            if (updateError) {
-                return [updateError];
+            let error, result;
+            if (employees["add"] !== undefined) {
+                const ids = employees["add"];
+                for (let j = 0; j < ids.length; j++) {
+                    [error, result] = yield (0, common_1.updateMany)(company_1.Company, { employees: ids[j] }, { ["$pull"]: { employees: ids[j] } });
+                    if (error) {
+                        return [error];
+                    }
+                }
             }
-            finalResult = updateResult;
+            [error, result] = yield (0, Company_1.updateCompanyDoc)(id, updateContents[i]);
+            if (error) {
+                return [error];
+            }
+            finalResult = result;
         }
         return [null, finalResult];
     });

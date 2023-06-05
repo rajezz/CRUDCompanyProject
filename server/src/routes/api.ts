@@ -13,7 +13,7 @@ import {
     listCompanies,
     getCompany,
     createCompany,
-    addUserToCompany,
+    
     updateCompany,
     deleteCompany,
 } from "../controllers/company";
@@ -24,7 +24,6 @@ apiRouter.get("/companies/list", listCompanies);
 apiRouter.get("/company/:id", getCompany);
 apiRouter.post("/company", createCompany);
 apiRouter.put("/company/:id", updateCompany);
-apiRouter.put("/company/adduser", addUserToCompany);
 apiRouter.delete("/company/:id", deleteCompany);
 
 apiRouter.get("/users/list", listUsers);
